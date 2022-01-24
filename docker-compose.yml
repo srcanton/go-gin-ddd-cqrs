@@ -1,0 +1,44 @@
+version: '3.7'
+services:
+  gogindddcqrs-go:
+    container_name: gogindddcqrs-go
+    env_file: .env
+    build:
+      context: . # Use an image built from the specified dockerfile in the current directory.
+      dockerfile: Dockerfile
+    ports:
+      - "${GIN_PORT}:8080"
+    restart: on-failure
+    depends_on:
+      - gogindddcqrs-postgres
+    networks:
+      - gogindddcqrs-network
+
+  gogindddcqrs-postgres:
+    image: postgres:latest
+    container_name: gogindddcqrs-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=gogindddcqrs
+    ports:
+      - "5432:5432"
+    volumes:
+      - gogindddcqrs-postgres:/var/lib/postgresql/data
+    networks:
+      - gogindddcqrs-network
+
+  gogindddcqrs-redis:
+    image: "redis:alpine"
+    container_name: gogindddcqrs-redis
+    ports:
+      - "6379:6379"
+    command: >
+      --requirepass redis
+volumes:
+  gogindddcqrs-postgres:
+
+# Networks to be created to facilitate communication between containers
+networks:
+  gogindddcqrs-network:
+    driver: bridge
